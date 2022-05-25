@@ -38,8 +38,9 @@ if __name__ == "__main__":
     from torch.utils.tensorboard import SummaryWriter
 
     now = datetime.datetime.now(dateutil.tz.tzlocal())
-    timestamp = now.strftime('%Y_%m%d__%H_%M___')
-    exp_folder_name = str(timestamp) + opt.exp_name
+    timestamp = now.strftime('%Y%m%d_%H%M_')
+    gpuid = "gpu" + opt.gpu_id
+    exp_folder_name = str(timestamp) + gpuid
 
     train_dataset = []
     test_dataset = []
@@ -61,8 +62,8 @@ if __name__ == "__main__":
         fold_timestamp = datetime.datetime.now(dateutil.tz.tzlocal()).strftime('%m_%d_%H_%M__')
         fold_exp_name = str(fold) + 'th_fold_'
 
-        output_dir = './experiments_sensor3d_multilabel_final/%s/%s' % (exp_folder_name, fold_exp_name)
-        writer_path = './log/%s/%s' % (exp_folder_name, fold_exp_name)
+        output_dir = './experiment_multilabel_results/%s/%s/%s' % (opt.exp_name, exp_folder_name, fold_exp_name)
+        writer_path = './experiment_multilabel_logs/%s/%s/%s' % (opt.exp_name, exp_folder_name, fold_exp_name)
         os.makedirs(writer_path)
         writer = SummaryWriter(writer_path)
 
