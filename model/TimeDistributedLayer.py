@@ -1,8 +1,4 @@
-import torch
 import torch.nn as nn
-import torch.autograd as autograd
-from torch.autograd import Variable
-import torch.nn.functional as F
 
 class TimeDistributedConv2d(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=False, dropout=False):
