@@ -34,7 +34,7 @@ print("total number of CT : ", len(CT_path_list))
 
 logtxt = open(base_path+'HDF_file_logs.txt','w+')
 
-csv = pd.read_csv('Orbit_CT_info.csv')
+csv = pd.read_csv('./csv/Orbit_CT_info.csv')
 # info_list=[]
 for CT_idx, CT_path in enumerate(CT_path_list):
     if (CT_idx == 34 or CT_idx == 37):
