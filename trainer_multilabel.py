@@ -2,16 +2,10 @@ import os
 import time
 import torch
 import torch.nn as nn
-import torch.autograd as autograd
 from torch.autograd import Variable
 import torch.optim as optim
-import torch.backends.cudnn as cudnn
 
 import numpy as np
-import random
-import torchvision
-import matplotlib.pyplot as plt
-from medpy.io import load, save
 import cv2
 
 from model.loss_multilabel import DiceLoss
