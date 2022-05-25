@@ -37,8 +37,7 @@ class Extractor:
 
             scan_vol,_ = load(self.data_dir + 'Scan/' + filename)
             mask_vol,_ = load(self.data_dir + 'Mask/' + filename)
-            print('mask_vol type :: ', type(mask_vol))
-            print('mask_vol shape :: ',mask_vol.shape)
+
             scan_vol = np.clip(scan_vol, level-window/2, level + window/2)
 
             masked_axial_idx_list = []
@@ -46,7 +45,7 @@ class Extractor:
                 if axial_idx==0 or axial_idx==mask_vol.shape[0]-1 or np.sum(mask_vol[axial_idx,:,:,:])==0:
                     continue
                 masked_axial_idx_list.append(axial_idx)
-            print(len(masked_axial_idx_list))
+
             recordtxt.write(filename + ' : ' + str(len(masked_axial_idx_list)) + '\n')
 
             # cut value len change
@@ -71,8 +70,6 @@ class Extractor:
 
                 resized_scan_sequence = np.zeros((self.num_sequence, 64, 64))
                 resized_mask_sequence = np.zeros((self.num_sequence, 64, 64, 3))
-                print('resized_scan_sequence1 :: ', resized_scan_sequence.shape)
-                print('resized_mask_sequence1 :: ', resized_mask_sequence.shape)
 
                 for i in range(self.num_sequence):
                     ### resize
@@ -92,8 +89,6 @@ class Extractor:
                 resized_scan_sequence = np.transpose(resized_scan_sequence, (1, 2, 0))
                 resized_mask_sequence = np.transpose(resized_mask_sequence, (1, 2, 0, 3))
 
-                print('resized_scan_sequence2 :: ', resized_scan_sequence.shape)
-                print('resized_mask_sequence2 :: ', resized_mask_sequence.shape)
                 save(resized_scan_sequence, save_path + 'vol/' + filename + '_z' + str(axial_idx) + '.nii')
                 save(resized_mask_sequence, save_path + 'mask/' + filename + '_z' + str(axial_idx) + '.nii')
 
