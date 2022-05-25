@@ -47,7 +47,7 @@ if __name__ == "__main__":
     for fold in range(opt.total_fold_num):
         train_dataset.append(TargetDataset(opt.dataset_path, 'train', fold, opt.total_fold_num))
         test_dataset.append(TargetDataset(opt.dataset_path,'test', fold, opt.total_fold_num))
-        print("train_dataset_cnt : ", train_dataset[fold].get_num_patient(), " :: test_dataset_cnt : ", test_dataset[fold].get_num_patient())
+        print("fold : ", fold," :: train_dataset_cnt : ", train_dataset[fold].get_num_patient(), " :: test_dataset_cnt : ", test_dataset[fold].get_num_patient())
 
     for fold in opt.fold_num:
         print(fold, '-th fold ::: training start')
