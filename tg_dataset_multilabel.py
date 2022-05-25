@@ -2,8 +2,6 @@ import torch.utils.data as data
 import numpy as np
 import os
 from medpy.io import load
-import pandas as pd
-import random
 
 class TargetDataset(data.Dataset):
     def __init__(self, tg_data_dir, mode, fold_number=0, total_fold=4):
@@ -35,7 +33,6 @@ class TargetDataset(data.Dataset):
 
         filenames = os.listdir(data_dir)
         for filename in filenames:
-            #patient_id = filename.split("_")[0]
             patient_id = filename.split("__")[0]
 
             if patient_id in mode_patient_id:
