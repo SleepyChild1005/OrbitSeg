@@ -1,7 +1,6 @@
 import h5py
 import numpy as np
 import cv2
-import sys
 import os
 import glob
 import pandas as pd

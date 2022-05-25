@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 from model.TimeDistributedLayer import TimeDistributedConv2d, TimeDistributedSigmoid
 
