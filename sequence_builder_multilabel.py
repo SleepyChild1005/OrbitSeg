@@ -104,7 +104,7 @@ class Extractor:
                     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_dir", type=str, default='./Preprocessing_ResultVolume/', help='vol_data_dir')
+    parser.add_argument("--data_dir", type=str, default='./Preprocessing_Result/Volume/', help='vol_data_dir')
     parser.add_argument("--save_dir", type=str, default='./Sequence_Built/Sequential_Slices_Clipping/', help="save_dir")
     
     opt = parser.parse_args()
