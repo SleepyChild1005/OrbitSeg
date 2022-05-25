@@ -15,7 +15,7 @@ if __name__ == "__main__":
     
     parser.add_argument('--learning_rate', type=float, default=5e-5, help='generator learning rate')     
     parser.add_argument('--total_fold_num', type=int, default=4, help='num of total fold')
-    parser.add_argument('--fold_num', type=int, nargs='+', required=True, help='num of target fold')
+    parser.add_argument('--fold_num', type=int, nargs='+', default= [0,1,2,3], help='num of target fold')
     
     parser.add_argument("--num_sequence", type=int, default=3, help='number of sequence')
     parser.add_argument("--image_size", type=int, default=64, help='image size')
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     parser.add_argument("--bAttention", type=int, default=0, help='attention model or not')
     parser.add_argument("--bTransfer_learning", type=int, default=0, help='transfer learning or not')
 
-    parser.add_argument("--exp_name", type=str, default='test', help='experiment name')
+    parser.add_argument("--exp_name", type=str, default='sensor3d_multilabel', help='experiment name')
     parser.add_argument("--pretrained_model_path", type=str, default='pretrained_model/nodule_sensor3d_attention_final.pth', help='pretrained_model_path')
     parser.add_argument("--dataset_path", type=str,
                         default='./Sequence_Built/Sequential_Slices_Clipping/',
