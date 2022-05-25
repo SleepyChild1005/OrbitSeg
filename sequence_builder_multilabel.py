@@ -1,7 +1,6 @@
-import pandas as pd
 import numpy as np
 from medpy.io import load, save
-import random
+
 import os
 import argparse
 import cv2
@@ -105,8 +104,8 @@ class Extractor:
                     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_dir", type=str, default='/home/ubuntu/Workspace/Wonseo/Orbit_Seg_bySJ/Orbit_Dataset_multilabel/Volume/', help='vol_data_dir')
-    parser.add_argument("--save_dir", type=str, default='/home/ubuntu/Workspace/Wonseo/Orbit_Seg_bySJ/Orbit_Dataset_multilabel/Sequential_Slices_Clipping_5/', help="save_dir")
+    parser.add_argument("--data_dir", type=str, default='./Preprocessing_ResultVolume/', help='vol_data_dir')
+    parser.add_argument("--save_dir", type=str, default='./Sequence_Built/Sequential_Slices_Clipping/', help="save_dir")
     
     opt = parser.parse_args()
 

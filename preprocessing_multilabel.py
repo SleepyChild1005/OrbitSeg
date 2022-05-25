@@ -12,7 +12,7 @@ window = 400
 data_path1 = '/home/ubuntu/data/Orbit/Normal/*.hdf'
 data_path2 = '/home/ubuntu/data/Orbit/Normal2/*.hdf'
 
-base_path = '/home/ubuntu/Workspace/Wonseo/Orbit_Seg_bySJ/Orbit_Dataset_multilabel/'
+base_path = './Preprocessing_Result/'
 capture_save_path = base_path + 'Volume_capture/'
 vol_save_path = base_path + 'Volume/'
 
@@ -26,7 +26,7 @@ if not os.path.exists(capture_save_path):
     os.makedirs(capture_save_path + 'Mask/OS/', exist_ok=True)
 
 if not os.path.exists(vol_save_path):
-    os.makedirs(vol_save_path+ 'Scan', exist_ok=True)
+    os.makedirs(vol_save_path+ 'Scan/', exist_ok=True)
     os.makedirs(vol_save_path + 'Mask/', exist_ok=True)
 
 CT_path_list = glob.glob(data_path1) + glob.glob(data_path2)

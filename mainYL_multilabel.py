@@ -26,7 +26,7 @@ if __name__ == "__main__":
     parser.add_argument("--exp_name", type=str, default='test', help='experiment name')
     parser.add_argument("--pretrained_model_path", type=str, default='pretrained_model/nodule_sensor3d_attention_final.pth', help='pretrained_model_path')
     parser.add_argument("--dataset_path", type=str,
-                        default='/home/ubuntu/Workspace/Wonseo/Orbit_Seg_bySJ/Orbit_Dataset_multilabel/Sequential_Slices_Clipping_5/',
+                        default='./Sequence_Built/Sequential_Slices_Clipping/',
                         help='tg_dataset_path')
 
 
