@@ -313,6 +313,7 @@ class sequentialSegTrainer(object):
 
             ##########################################################
             ##########################################################
+            ### test
             sqNet.eval()
             sqNet.requires_grad_(False)
 
@@ -428,9 +429,8 @@ class sequentialSegTrainer(object):
                         result_imgs = np.array([])
                        
                         for idx, (gt, m, pred_m) in enumerate(zip(test_seq_vols, test_masks, test_pred_masks)):
-
                             pred_m = np.where(pred_m>0.5, 1, 0)
-
+                            ## rgb color filters
                             # gt lb1 color rgb 128, 24, 185
                             b_gtmask_lb1 = np.zeros([64, 64, 3])
                             b_gtmask_lb1[:, :, 0] = 128
@@ -464,7 +464,7 @@ class sequentialSegTrainer(object):
                             b_predmask_lb3[:, :, 2] = 196
 
                             gt = cv2.cvtColor(gt[:, :, 1] * 255, cv2.COLOR_GRAY2RGB)
-
+                            # multiply rgb filter
                             b_gtmask_lb1 = mul_rgb(b_gtmask_lb1, m[0, :, :])
                             b_gtmask_lb2 = mul_rgb(b_gtmask_lb2, m[1, :, :])
                             b_gtmask_lb3 = mul_rgb(b_gtmask_lb3, m[2, :, :])
@@ -472,7 +472,7 @@ class sequentialSegTrainer(object):
                             b_predmask_lb1 = mul_rgb(b_predmask_lb1, pred_m[0, :, :])
                             b_predmask_lb2 = mul_rgb(b_predmask_lb2, pred_m[1, :, :])
                             b_predmask_lb3 = mul_rgb(b_predmask_lb3, pred_m[2, :, :])
-
+                            # save result images
                             temp_result_gtmask = cv2.addWeighted(gt.astype(np.uint8), 0.7,
                                                                  b_gtmask_lb1.astype(np.uint8), 0.5, 0)
                             temp_result_gtmask = cv2.addWeighted(temp_result_gtmask, 0.7,
@@ -498,27 +498,28 @@ class sequentialSegTrainer(object):
                                 break
                         cv2.imwrite(self.test_result_dir + '/test_epoch_' + str(epoch) + '_step' + str(total_step) + '.png', result_imgs)
                 
-                # calculate
+                # calculate dice score for total, each labels
                 total_dice_coeff = sum(total_dice_coeff) / sum(total_num_test_batch)
                 total_dice_coeff_lb1 = sum(total_dice_coeff_lb1) / sum(total_num_test_batch)
                 total_dice_coeff_lb2 = sum(total_dice_coeff_lb2) / sum(total_num_test_batch)
                 total_dice_coeff_lb3 = sum(total_dice_coeff_lb3) / sum(total_num_test_batch)
-
+                # calculate wrong dice score for total, each labels
                 total_w_dice_coeff = sum(total_w_dice_coeff) / sum(total_num_test_batch)
                 total_w_dice_coeff_lb1 = sum(total_w_dice_coeff_lb1) / sum(total_num_test_batch)
                 total_w_dice_coeff_lb2 = sum(total_w_dice_coeff_lb2) / sum(total_num_test_batch)
                 total_w_dice_coeff_lb3 = sum(total_w_dice_coeff_lb3) / sum(total_num_test_batch)
-
+                # calculate segmantation loss for total, each labels
                 total_seg_loss = sum(total_seg_loss) / sum(total_num_test_batch)
                 total_seg_loss_lb1 = sum(total_seg_loss_lb1) / sum(total_num_test_batch)
                 total_seg_loss_lb2 = sum(total_seg_loss_lb2) / sum(total_num_test_batch)
                 total_seg_loss_lb3 = sum(total_seg_loss_lb3) / sum(total_num_test_batch)
-
+                # calculate volume similarity for total, each labels
                 total_vs = sum(total_vs) / sum(total_num_test_batch)
                 total_vs_lb1 = sum(total_vs_lb1) / sum(total_num_test_batch)
                 total_vs_lb2 = sum(total_vs_lb2) / sum(total_num_test_batch)
                 total_vs_lb3 = sum(total_vs_lb3) / sum(total_num_test_batch)
 
+                # add scalar to tensorboard
                 self.writer.add_scalar('test/dice coeff', total_dice_coeff, epoch)
                 self.writer.add_scalar('test/dice coeff_label1', total_dice_coeff_lb1, epoch)
                 self.writer.add_scalar('test/dice coeff_label2', total_dice_coeff_lb2, epoch)
@@ -538,7 +539,7 @@ class sequentialSegTrainer(object):
                 self.writer.add_scalar('test/volume similarity_label1', total_vs_lb1, epoch)
                 self.writer.add_scalar('test/volume similarity_label2', total_vs_lb2, epoch)
                 self.writer.add_scalar('test/volume similarity_label3', total_vs_lb3, epoch)
-
+                # for result (/n th_fold_/model/*)
                 if epoch == self.epochs - 50:
                     best_dice_score = total_dice_coeff
                     worst_dice_score = total_dice_coeff
@@ -573,6 +574,7 @@ class sequentialSegTrainer(object):
                     av_volume_metric_lb3 = total_vs_lb3
 
                 elif epoch > self.epochs - 50:
+                    # save total, best dice score
                     if best_dice_score < total_dice_coeff:
                         best_dice_score = total_dice_coeff
                         torch.save(sqNet.state_dict(), '%s/sqNet_best.pth' % (self.model_dir))
@@ -585,7 +587,7 @@ class sequentialSegTrainer(object):
 
                     elif worst_volume_metric > total_vs:
                         worst_volume_metric = total_vs
-                    # label1
+                    # save label1, best dice score
                     if best_dice_score_lb1 < total_dice_coeff_lb1:
                         best_dice_score_lb1 = total_dice_coeff_lb1
                         torch.save(sqNet.state_dict(), '%s/sqNet_best_label1.pth' % (self.model_dir))
@@ -598,7 +600,7 @@ class sequentialSegTrainer(object):
 
                     elif worst_volume_metric_lb1 > total_vs_lb1:
                         worst_volume_metric_lb1 = total_vs_lb1
-                    # label2
+                    # save label2, best dice score
                     if best_dice_score_lb2 < total_dice_coeff_lb2:
                         best_dice_score_lb2 = total_dice_coeff_lb2
                         torch.save(sqNet.state_dict(), '%s/sqNet_best_label2.pth' % (self.model_dir))
@@ -612,7 +614,7 @@ class sequentialSegTrainer(object):
                     elif worst_volume_metric_lb2 > total_vs_lb2:
                         worst_volume_metric_lb2 = total_vs_lb2
 
-                    # label3
+                    # save label3, best dice score
                     if best_dice_score_lb3 < total_dice_coeff_lb3:
                         best_dice_score_lb3 = total_dice_coeff_lb3
                         torch.save(sqNet.state_dict(), '%s/sqNet_best_label3.pth' % (self.model_dir))
@@ -634,55 +636,54 @@ class sequentialSegTrainer(object):
                     av_volume_metric_lb1 += total_vs_lb1
                     av_volume_metric_lb2 += total_vs_lb2
                     av_volume_metric_lb3 += total_vs_lb3
-           
-
+        # save final result
         torch.save(sqNet.state_dict(), '%s/sqNet_final.pth' % (self.model_dir))
         print("best_dice_score  : ", best_dice_score)
         print("worst_dice_score  : ", worst_dice_score)
         end_t = time.time()
-
+        ## write txt file for summary (/n th_fold_/model/best_worst_dice_score.txt)
         f = open(self.model_dir + '/best_worst_dice_score.txt', 'w')
+        # summary
         f.write("Experiment_Name : "+self.output_dir.split("/")[-3]+"/"+self.output_dir.split("/")[-2]+"/"+self.output_dir.split("/")[-1]+"\n")
         f.write("label 1 : Globe \n")
         f.write("label 2 : Extraocular m. \n")
         f.write("label 3 : Optic n. \n")
-
+        # best dice score
         f.write("best_dice_score : %.5f \n" % (best_dice_score))
         f.write("best_dice_score : label1 :: %.5f \n" % (best_dice_score_lb1))
         f.write("best_dice_score : label2 :: %.5f \n" % (best_dice_score_lb2))
         f.write("best_dice_score : label3 :: %.5f \n" % (best_dice_score_lb3))
-
+        # worst dice score
         f.write("worst_dice_score : %.5f \n" % (worst_dice_score))
         f.write("worst_dice_score : label1 :: %.5f \n" % (worst_dice_score_lb1))
         f.write("worst_dice_score : label2 :: %.5f \n" % (worst_dice_score_lb2))
         f.write("worst_dice_score : label3 :: %.5f \n" % (worst_dice_score_lb3))
-
+        # average dice score
         f.write('Average_dice_score : %.5f \n' % (av_dice_score / 50))
         f.write('Average_dice_score : label1 :: %.5f \n' % (av_dice_score_lb1 / 50))
         f.write('Average_dice_score : label2 :: %.5f \n' % (av_dice_score_lb2 / 50))
         f.write('Average_dice_score : label3 :: %.5f \n' % (av_dice_score_lb3 / 50))
-
+        # best Volumetric Similarity
         f.write("best_Volumetric_Similarity : %.5f \n" % (best_volume_metric))
         f.write("best_Volumetric_Similarity : label1 :: %.5f \n" % (best_volume_metric_lb1))
         f.write("best_Volumetric_Similarity : label2 :: %.5f \n" % (best_volume_metric_lb2))
         f.write("best_Volumetric_Similarity : label3 :: %.5f \n" % (best_volume_metric_lb3))
-
+        # worst Volumetric Similarity
         f.write("worst_Volumetric_Similarity : %.5f \n" % (worst_volume_metric))
         f.write("worst_Volumetric_Similarity : label1 :: %.5f \n" % (worst_volume_metric_lb1))
         f.write("worst_Volumetric_Similarity : label2 :: %.5f \n" % (worst_volume_metric_lb2))
         f.write("worst_Volumetric_Similarity : label3 :: %.5f \n" % (worst_volume_metric_lb3))
-
+        # average Volumetric Similarity
         f.write('Average_Volumetric_Similarity : %.5f \n' % (av_volume_metric / 50))
         f.write('Average_Volumetric_Similarity : label1 :: %.5f \n' % (av_volume_metric_lb1 / 50))
         f.write('Average_Volumetric_Similarity : label2 :: %.5f \n' % (av_volume_metric_lb2 / 50))
         f.write('Average_Volumetric_Similarity : label3 :: %.5f \n' % (av_volume_metric_lb3 / 50))
-
+        # params, training time
         f.write('Total Param : %i \n' %(total_param))
         f.write('Train Param : %i \n' %(train_param))
         f.write('Total Training Time : %.5f \n' % ( end_t - start_t))
         f.close()
-
-            
+    # flattening
     def flatten_outputs(self, fea):
         return torch.reshape(fea, (fea.shape[0], fea.shape[1], fea.shape[2], fea.shape[3]*fea.shape[4]))
         
