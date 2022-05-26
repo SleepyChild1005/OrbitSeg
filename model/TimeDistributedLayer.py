@@ -20,7 +20,6 @@ class TimeDistributedConv2d(nn.Module):
         # Squash samples and timesteps into a single axis
         x_reshape = x.contiguous().view(-1, x.size(-3),x.size(-2), x.size(-1))     # (samples * timesteps, input_size)
 
-        # y = self.conv2d(x_reshape)
         y = self.seq(x_reshape)
         y = y.contiguous().view(x.size(0), x.size(1), -1, x.size(-2), x.size(-1))  # (samples, timesteps, output_size)
         return y
@@ -41,7 +40,6 @@ class TimeDistributedMaxPool(nn.Module):
         y = y.contiguous().view(x.size(0), x.size(1), x.size(2), x.size(-2)//2, x.size(-1)//2)  # (samples, timesteps, output_size)
         return y
 
-# self.upsampling = nn.Upsample(scale_factor=2, mode='nearest')
 class TimeDistributedUpsampling(nn.Module):
     def __init__(self, scale_factor=2, mode='nearest'):
         super(TimeDistributedUpsampling, self).__init__()

@@ -6,19 +6,24 @@ import glob
 import pandas as pd
 from medpy.io import save
 
+# preprocessing
+
 level = 48
 window = 400
 
+# Data directory, edit if your using private data set
 data_path1 = '/home/ubuntu/data/Orbit/Normal/*.hdf'
 data_path2 = '/home/ubuntu/data/Orbit/Normal2/*.hdf'
 
+# Define save dirs
 base_path = './Preprocessing_Result/'
 capture_save_path = base_path + 'Volume_capture/'
 vol_save_path = base_path + 'Volume/'
 
+# Create dirs to save
 if not os.path.exists(capture_save_path):
     os.makedirs(capture_save_path,exist_ok=True)
-    os.makedirs(capture_save_path+'Scan/head_crop/',exist_ok=True)
+    os.makedirs(capture_save_path + 'Scan/head_crop/',exist_ok=True)
     os.makedirs(capture_save_path + 'Scan/OD/', exist_ok=True)
     os.makedirs(capture_save_path + 'Scan/OS/', exist_ok=True)
     os.makedirs(capture_save_path + 'Mask/', exist_ok=True)
@@ -29,29 +34,28 @@ if not os.path.exists(vol_save_path):
     os.makedirs(vol_save_path+ 'Scan/', exist_ok=True)
     os.makedirs(vol_save_path + 'Mask/', exist_ok=True)
 
+# Checking basic file infos
 CT_path_list = glob.glob(data_path1) + glob.glob(data_path2)
 print("total number of CT : ", len(CT_path_list))
 
+# open txt file for log
 logtxt = open(base_path+'HDF_file_logs.txt','w+')
 
+# open csv file
 csv = pd.read_csv('./csv/Orbit_CT_info.csv')
-# info_list=[]
+
+# exception for error occuring datas
+exception_list = [14,15,17,19,21,34,37,22,23,26,32,45,47,49,18,57]
+
 for CT_idx, CT_path in enumerate(CT_path_list):
-    if (CT_idx == 34 or CT_idx == 37):
+    if (CT_idx < 10 or (CT_idx in exception_list)):
         print (CT_idx, ' th CT : ', CT_path, '-->   skipped ')
         logtxt.write(str(CT_idx)+' th CT :: '+CT_path+ ' :: skipped \n')
         continue
-    if (CT_idx < 10 or CT_idx==14 or CT_idx==15 or CT_idx ==17 or CT_idx==19 or CT_idx == 21):
-        logtxt.write(str(CT_idx)+ ' th CT :: ' + CT_path + ' :: skipped \n')
-        continue
-    if (CT_idx == 22 or CT_idx == 23 or CT_idx == 26 or CT_idx == 32 or CT_idx == 45 or CT_idx == 47 or CT_idx == 49):
-        logtxt.write(str(CT_idx) + ' th CT :: ' + CT_path + ' :: skipped \n')
-        continue
-    # DG error case 추가 arr overflow
-    if (CT_idx == 18 or CT_idx == 57):
-        logtxt.write(str(CT_idx) + ' th CT :: ' + CT_path + ' :: skipped :: arr overflow \n')
-        continue
-    print('\nDG_LOG::: ',CT_idx,'th :: ',CT_path)
+
+    print(CT_idx,'th :: ',CT_path,'preprocessing start')
+
+    # preprocessing main function
     try:
         f = h5py.File(CT_path, 'r')
         logtxt.write(str(CT_idx) + ' th CT :: ' + CT_path + ' :: success ::  \n')
@@ -82,7 +86,6 @@ for CT_idx, CT_path in enumerate(CT_path_list):
     print ('CT_name = ', CT_name)
     print ('idx_name = ', idx_name)
     #####
-    #CT_sub_name = str(CT_idx) + '_' +  CT_name + '_####' + str(image_idx+1) + '_' +  img_name
     CT_sub_name = img_name
     print('**** working ****')
 
@@ -133,19 +136,18 @@ for CT_idx, CT_path in enumerate(CT_path_list):
     eye_range_y = (height-1)*2//3
     eye_range_z = (width-1)//2
 
-    # DG initials
+    # variables for loop
     _lp = 0
     is_OD = True
     _count = 5
-    # OD == right eye
+
+    # for computer scientists, [ OD == right eye, OS == left_eye ]
     dict_eye_data = {}
     dict_eye_label = {}
     dict_eye_label_slice = {}
     tumor_cnt = {}
-    '''
-    Loop_DG
-    '''
 
+    # preprocessing loop
     while _lp < 2:
         if is_OD:
             eye_data = data[:, head_ymin:head_ymin + eye_range_y, head_zmax - eye_range_z:head_zmax, :]
@@ -160,19 +162,15 @@ for CT_idx, CT_path in enumerate(CT_path_list):
         dict_eye_label[current_eye] = {}
         dict_eye_label_slice[current_eye] = {}
 
-
-        """
-        DG add dimension
-        """
+        # adding dimension for labels, meaning (3,) is for 3 labels ((n,) for n labels)
         data_shape = eye_label.shape + (3,)
         eye_multilabel = np.zeros(data_shape)
         eye_multilabel[:, :, :, 0] = np.where(eye_label == 1, 1, 0)
         eye_multilabel[:, :, :, 1] = np.where(eye_label == 2, 1, 0)
         eye_multilabel[:, :, :, 2] = np.where(eye_label == 3, 1, 0)
 
+        #
         dict_eye_label[current_eye][0] = eye_multilabel
-        """
-        """
         eye_data_slice = eye_data[label_slice_idx[slice_idx],:,:]
         dict_eye_label_slice[current_eye][0] = dict_eye_label[current_eye][0][label_slice_idx[slice_idx], :, :, :]
 
@@ -188,25 +186,22 @@ for CT_idx, CT_path in enumerate(CT_path_list):
 
     print('OD_tumor_cnt : ', tumor_cnt['OD'],',   OS_tumor_cnt : ', tumor_cnt['OS'])
 
+    # saving normal data to nii file Scan for backkground, Mask for label
     if tumor_cnt['OS'] < 10000:
-        # CT_vol_name = str(CT_idx) + '__' +  CT_name + '__' + str(image_idx+1) + '__' +  img_name + '__right.nii'
         CT_vol_name = idx_name + '__OD.nii'
         save(dict_eye_data['OD'], vol_save_path + 'Scan/' + CT_vol_name)
         save(dict_eye_label['OD'][0], vol_save_path + 'Mask/' + CT_vol_name)
 
     elif tumor_cnt['OD'] < 10000:
-        # CT_vol_name = str(CT_idx) + '__' +  CT_name + '__' + str(image_idx+1) + '__' +  img_name + '__left.nii'
         CT_vol_name = idx_name + '__OS.nii'
         save(dict_eye_data['OS'], vol_save_path + 'Scan/' + CT_vol_name)
         save(dict_eye_label['OS'][0], vol_save_path + 'Mask/' + CT_vol_name)
 
     elif (tumor_cnt['OD'] * tumor_cnt['OS'] > 0):
-        # CT_vol_name = str(CT_idx) + '__' +  CT_name + '__' + str(image_idx+1) + '__' +  img_name + '__right.nii'
         CT_vol_name = idx_name + '__OD.nii'
         save(dict_eye_data['OD'], vol_save_path + 'Scan/' + CT_vol_name)
         save(dict_eye_label['OD'][0], vol_save_path + 'Mask/' + CT_vol_name)
 
-        # CT_vol_name = str(CT_idx) + '__' +  CT_name + '__' + str(image_idx+1) + '__' +  img_name + '__left.nii'
         CT_vol_name = idx_name + '__OS.nii'
         save(dict_eye_data['OS'], vol_save_path + 'Scan/' + CT_vol_name)
         save(dict_eye_label['OS'][0], vol_save_path + 'Mask/' + CT_vol_name)
@@ -216,4 +211,5 @@ for CT_idx, CT_path in enumerate(CT_path_list):
               str(CT_idx) + '__' + CT_name + '__' + str(idx_name + 1) + '__' + img_name)
         print('OD, OS : ', tumor_cnt['OD'], tumor_cnt['OS'])
 
+# save log
 logtxt.close()
