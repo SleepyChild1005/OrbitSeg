@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+# used in trainer
 
 class DiceLoss(nn.Module):
     def __init__(self):

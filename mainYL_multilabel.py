@@ -6,7 +6,8 @@ import dateutil.tz
 import torch
 
 if __name__ == "__main__":
-    
+
+    # args parsers
     parser = argparse.ArgumentParser()
     parser.add_argument("--gpu_id", type=str, default='0', help='GPU number')
     parser.add_argument("--num_workers", type=int, default=4, help='worker number')
@@ -28,10 +29,10 @@ if __name__ == "__main__":
     parser.add_argument("--dataset_path", type=str,
                         default='./Sequence_Built/Sequential_Slices_Clipping/',
                         help='tg_dataset_path')
-
-
+    # parse args
     opt = parser.parse_args()
 
+    # import target dataset,trainer, tensorboard
     from tg_dataset_multilabel import TargetDataset
     from trainer_multilabel import sequentialSegTrainer as trainer
     from torch.utils.tensorboard import SummaryWriter
@@ -43,15 +44,17 @@ if __name__ == "__main__":
 
     train_dataset = []
     test_dataset = []
+
+    # dataset for each fold
     print('check opt.total_fold_num = ',opt.total_fold_num)
     for fold in range(opt.total_fold_num):
         train_dataset.append(TargetDataset(opt.dataset_path, 'train', fold, opt.total_fold_num))
         test_dataset.append(TargetDataset(opt.dataset_path,'test', fold, opt.total_fold_num))
         print("fold", fold," :: train_dataset_cnt : ", train_dataset[fold].get_num_patient(), " :: test_dataset_cnt : ", test_dataset[fold].get_num_patient())
 
+    # get dataset for each fold, then train each fold
     for fold in opt.fold_num:
         print(fold, 'th fold ::: training start')
-
         print(fold, 'th fold train/test seq:: ', len(train_dataset[fold]), len(test_dataset[fold]))
         print(fold, 'th fold train/test patient:: ', train_dataset[fold].get_num_patient(), test_dataset[fold].get_num_patient())
 
@@ -61,13 +64,13 @@ if __name__ == "__main__":
         fold_timestamp = datetime.datetime.now(dateutil.tz.tzlocal()).strftime('%m_%d_%H_%M__')
         fold_exp_name = str(fold) + 'th_fold_'
 
+        # directory for log, results
         output_dir = './experiment_multilabel_results/%s/%s/%s' % (opt.exp_name, exp_folder_name, fold_exp_name)
         writer_path = './experiment_multilabel_logs/%s/%s/%s' % (opt.exp_name, exp_folder_name, fold_exp_name)
         os.makedirs(writer_path)
         writer = SummaryWriter(writer_path)
 
-
-
+        # trainer from trainer_multilabel.py
         algo = trainer(epochs= opt.epochs,
                         gpu= opt.gpu_id,
                         batch_size= opt.batch_size,

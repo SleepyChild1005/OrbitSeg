@@ -3,8 +3,9 @@ import torch.nn as nn
 
 from model.TimeDistributedLayer import TimeDistributedConv2d, TimeDistributedMaxPool, TimeDistributedUpsampling
 from model.BiConvLSTM import BiConvLSTM
-
+# used in trainer
 class DeepSequentialNet(nn.Module):
+    # n_class for multiple output (== label numbers)
     def __init__(self, image_size, device, n_class=3):
         super(DeepSequentialNet, self).__init__()
         self.device = device

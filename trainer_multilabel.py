@@ -9,6 +9,7 @@ import numpy as np
 import cv2
 
 from model.loss_multilabel import DiceLoss
+# used in mainYL
 
 def weights_init(m):
     classname = m.__class__.__name__
@@ -54,7 +55,7 @@ def compute_vs(pred, gt):
 
     total_sum_vs = sum(single_vs)
     return total_sum_vs
-
+# for multiplying rgb np array
 def mul_rgb(rgb_mask,m):
     _mask = np.zeros([64,64,3])
     _mask[:,:,:] = rgb_mask[:,:,:]
@@ -101,18 +102,20 @@ class sequentialSegTrainer(object):
         
     
     def train(self):
+        ## 3 modes [ sensor3D Unet, Attention c sensor3D Unet, Domain Adaptation c Attention c sensor3D Unet ]
+        # Attention
         if self.bAttention and not(self.bTransfer_learning):
             from model.attention_model_multilabel import DeepSequentialNet
             sqNet = DeepSequentialNet(self.image_size, self.device).to(self.device)
             sqNet.apply(weights_init)
             print("###### Sensor3D + Attention model ######")
-            
+        # just sensor3D Unet
         elif not(self.bAttention) and not(self.bTransfer_learning):
             from model.sensor3d_model_multilabel import DeepSequentialNet
             sqNet = DeepSequentialNet(self.image_size, self.device).to(self.device)
             sqNet.apply(weights_init)
             print("###### Sensor3D model ######")
-        
+        # Domain Adaptation, Attention
         elif self.bAttention and self.bTransfer_learning:
             from model.attention_model import DeepSequentialNet
             sqNet = DeepSequentialNet(self.image_size, self.device).to(self.device)
@@ -122,15 +125,13 @@ class sequentialSegTrainer(object):
             
         total_param = sum(p.numel() for p in sqNet.parameters())
         train_param = sum(p.numel() for p in sqNet.parameters() if p.requires_grad)
-
-        
         
         optimizer = optim.Adam(sqNet.parameters(), lr=self.learning_rate, betas=(0.9, 0.999))
         criterion = DiceLoss().to(self.device)
 
-        
         start_t = time.time()
 
+        # variables for each label, total
         total_step = 0
         result_print_step=10
         loss_print_step = 10
@@ -147,13 +148,13 @@ class sequentialSegTrainer(object):
         worst_dice_score_lb2 = 0
         worst_dice_score_lb3 = 0
 
+        ### trainer main function
         for epoch in range(self.epochs):
             if epoch == 10:
                 result_print_step = 100
                 test_img_export_interval = 20
             elif epoch == 100:
                 result_print_step = 1000
-            
             start_time_epoch = time.time()
 
             for data in self.train_dataloader:
@@ -169,13 +170,6 @@ class sequentialSegTrainer(object):
                 sqNet.train()
                 sqNet.requires_grad_(True)
                 pred_masks = sqNet(seq_vols)
-
-                # masks = np.squeeze(masks)
-                # masks = np.transpose(0, 3, 1, 2)
-
-                # trainer_multilabel: seq_vols::  torch.Size([32, 3, 1, 64, 64])
-                # trainer_multilabel: pred_masks::  torch.Size([32, 3, 64, 64])
-                # trainer_multilabel: masks::  torch.Size([32, 3, 64, 64])
 
                 mask_lb1 = masks[:, None, 0, :, :].to(self.device)
                 mask_lb2 = masks[:, None, 1, :, :].to(self.device)
@@ -241,8 +235,8 @@ class sequentialSegTrainer(object):
                             result_imgs = np.array([])
 
                             for train_result_idx, (gt, m, pred_m) in enumerate(zip(seq_vols, masks, pred_masks)):
-
                                 pred_m = np.where(pred_m>0.5, 1, 0)
+                                ## rgb color filters
                                 # gt lb1 color rgb 128, 24, 185
                                 b_gtmask_lb1 = np.zeros([64, 64, 3])
                                 b_gtmask_lb1[:, :, 0] = 128
@@ -275,6 +269,7 @@ class sequentialSegTrainer(object):
                                 b_predmask_lb3[:, :, 1] = 184
                                 b_predmask_lb3[:, :, 2] = 196
 
+                                # multiply rgb filter
                                 gt = cv2.cvtColor(gt[:,:,1]*255, cv2.COLOR_GRAY2RGB)
 
                                 b_gtmask_lb1 = mul_rgb(b_gtmask_lb1, m[0, :, :])
@@ -284,7 +279,7 @@ class sequentialSegTrainer(object):
                                 b_predmask_lb1 = mul_rgb(b_predmask_lb1, pred_m[0 ,:, :])
                                 b_predmask_lb2 = mul_rgb(b_predmask_lb2, pred_m[1, :, :])
                                 b_predmask_lb3 = mul_rgb(b_predmask_lb3, pred_m[2, :, :])
-
+                                # save result images
                                 temp_result_gtmask = cv2.addWeighted(gt.astype(np.uint8), 0.7,
                                                                          b_gtmask_lb1.astype(np.uint8), 0.5, 0)
                                 temp_result_gtmask = cv2.addWeighted(temp_result_gtmask, 0.7,
@@ -503,7 +498,7 @@ class sequentialSegTrainer(object):
                                 break
                         cv2.imwrite(self.test_result_dir + '/test_epoch_' + str(epoch) + '_step' + str(total_step) + '.png', result_imgs)
                 
-
+                # calculate
                 total_dice_coeff = sum(total_dice_coeff) / sum(total_num_test_batch)
                 total_dice_coeff_lb1 = sum(total_dice_coeff_lb1) / sum(total_num_test_batch)
                 total_dice_coeff_lb2 = sum(total_dice_coeff_lb2) / sum(total_num_test_batch)
