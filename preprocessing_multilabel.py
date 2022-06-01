@@ -207,7 +207,7 @@ for CT_idx, CT_path in enumerate(CT_path_list):
         save(dict_eye_label['OS'][0], vol_save_path + 'Mask/' + CT_vol_name)
 
     elif ((tumor_cnt['OD'] + tumor_cnt['OS']) == 0):
-        print("tumor error!!!!!!!!!!!!!! >>>>>>>>>>>>> ",
+        print("tumor error!!! >>>>>>>> ",
               str(CT_idx) + '__' + CT_name + '__' + str(idx_name + 1) + '__' + img_name)
         print('OD, OS : ', tumor_cnt['OD'], tumor_cnt['OS'])
 
