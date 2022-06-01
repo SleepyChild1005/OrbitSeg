@@ -12,8 +12,7 @@ level = 48
 window = 400
 
 # Data directory, edit if your using private data set
-data_path1 = '/home/ubuntu/data/Orbit/Normal/*.hdf'
-data_path2 = '/home/ubuntu/data/Orbit/Normal2/*.hdf'
+data_path = './Data/*.hdf'
 
 # Define save dirs
 base_path = './Preprocessing_Result/'
@@ -35,7 +34,7 @@ if not os.path.exists(vol_save_path):
     os.makedirs(vol_save_path + 'Mask/', exist_ok=True)
 
 # Checking basic file infos
-CT_path_list = glob.glob(data_path1) + glob.glob(data_path2)
+CT_path_list = glob.glob(data_path)
 print("total number of CT : ", len(CT_path_list))
 
 # open txt file for log
@@ -44,17 +43,9 @@ logtxt = open(base_path+'HDF_file_logs.txt','w+')
 # open csv file
 csv = pd.read_csv('./csv/Orbit_CT_info.csv')
 
-# exception for error occuring datas
-exception_list = [14,15,17,19,21,34,37,22,23,26,32,45,47,49,18,57]
-
+# exception if error occurs
 for CT_idx, CT_path in enumerate(CT_path_list):
-    if (CT_idx < 10 or (CT_idx in exception_list)):
-        print (CT_idx, ' th CT : ', CT_path, '-->   skipped ')
-        logtxt.write(str(CT_idx)+' th CT :: '+CT_path+ ' :: skipped \n')
-        continue
-
     print(CT_idx,'th :: ',CT_path,'preprocessing start')
-
     # preprocessing main function
     try:
         f = h5py.File(CT_path, 'r')
