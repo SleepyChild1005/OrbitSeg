@@ -178,17 +178,7 @@ for CT_idx, CT_path in enumerate(CT_path_list):
     print('OD_tumor_cnt : ', tumor_cnt['OD'],',   OS_tumor_cnt : ', tumor_cnt['OS'])
 
     # saving normal data to nii file Scan for backkground, Mask for label
-    if tumor_cnt['OS'] < 10000:
-        CT_vol_name = idx_name + '__OD.nii'
-        save(dict_eye_data['OD'], vol_save_path + 'Scan/' + CT_vol_name)
-        save(dict_eye_label['OD'][0], vol_save_path + 'Mask/' + CT_vol_name)
-
-    elif tumor_cnt['OD'] < 10000:
-        CT_vol_name = idx_name + '__OS.nii'
-        save(dict_eye_data['OS'], vol_save_path + 'Scan/' + CT_vol_name)
-        save(dict_eye_label['OS'][0], vol_save_path + 'Mask/' + CT_vol_name)
-
-    elif (tumor_cnt['OD'] * tumor_cnt['OS'] > 0):
+    if (tumor_cnt['OD'] * tumor_cnt['OS'] > 0):
         CT_vol_name = idx_name + '__OD.nii'
         save(dict_eye_data['OD'], vol_save_path + 'Scan/' + CT_vol_name)
         save(dict_eye_label['OD'][0], vol_save_path + 'Mask/' + CT_vol_name)
@@ -196,11 +186,6 @@ for CT_idx, CT_path in enumerate(CT_path_list):
         CT_vol_name = idx_name + '__OS.nii'
         save(dict_eye_data['OS'], vol_save_path + 'Scan/' + CT_vol_name)
         save(dict_eye_label['OS'][0], vol_save_path + 'Mask/' + CT_vol_name)
-
-    elif ((tumor_cnt['OD'] + tumor_cnt['OS']) == 0):
-        print("tumor error!!! >>>>>>>> ",
-              str(CT_idx) + '__' + CT_name + '__' + str(idx_name + 1) + '__' + img_name)
-        print('OD, OS : ', tumor_cnt['OD'], tumor_cnt['OS'])
 
 # save log
 logtxt.close()
