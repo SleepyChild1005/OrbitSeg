@@ -1,4 +1,4 @@
-# Orbit_CMC_publish
+# OrbitSeg
 
 > Multilabel Python execution Order
 1. preprocessing_multilabel.py
