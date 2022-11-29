@@ -40,9 +40,6 @@ print("total number of CT : ", len(CT_path_list))
 # open txt file for log
 logtxt = open(base_path + 'HDF_file_logs.txt', 'w+')
 
-# open csv file
-csv = pd.read_csv('./csv/Orbit_CT_info.csv')
-
 # exception if error occurs
 for CT_idx, CT_path in enumerate(CT_path_list):
     print(CT_idx, 'th :: ', CT_path, 'preprocessing start')
