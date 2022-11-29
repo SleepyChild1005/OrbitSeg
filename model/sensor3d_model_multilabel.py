@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import sys
 
 from model.TimeDistributedLayer import TimeDistributedConv2d, TimeDistributedMaxPool, TimeDistributedUpsampling
 from model.BiConvLSTM import BiConvLSTM
@@ -60,7 +61,10 @@ class DeepSequentialNet(nn.Module):
 
     def forward(self, input):
         ### encoding
+        print('input',input.shape)
         encoded_vol1 = self.encoding_block1(input)
+        print('encoded_vol1',encoded_vol1.shape)
+        sys.exit("Debugging")
         maxpooled_encoded_vol1 = self.maxpooling(encoded_vol1)
         encoded_vol2 = self.encoding_block2(maxpooled_encoded_vol1)
         maxpooled_encoded_vol2 = self.maxpooling(encoded_vol2)

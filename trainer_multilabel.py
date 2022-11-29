@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import torch
 import torch.nn as nn
@@ -166,7 +167,7 @@ class sequentialSegTrainer(object):
                 cnt_nodulePixel = masks.nonzero(as_tuple=False).size(0) + 1          # mask = 1 (nodule)
                 cnt_allPixel = masks.numel()                           # all mask pixel
                 loss_weight = cnt_allPixel/cnt_nodulePixel
-
+                print('seq_vols',seq_vols.shape)
                 sqNet.train()
                 sqNet.requires_grad_(True)
                 pred_masks = sqNet(seq_vols)
